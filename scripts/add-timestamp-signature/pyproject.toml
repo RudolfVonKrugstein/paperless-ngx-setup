@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "add-timestamp-signature"
+version = "0.1.0"
+description = "Add TSP Timestamp signature to consumed documents"
+authors = ["Nathan Hüsken <nathan@huesken.org>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+tsp-client = "^0.2.0"
+requests = "^2.32.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
