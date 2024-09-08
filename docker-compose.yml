@@ -1,6 +1,7 @@
-# Docker Compose file for running paperless from the docker container registry.
+# docker compose file for running paperless from the Docker Hub.
 # This file contains everything paperless needs to run.
 # Paperless supports amd64, arm and arm64 hardware.
+#
 # All compose files of paperless configure paperless in the following way:
 #
 # - Paperless is (re)started on system boot, if it was running before shutdown.
@@ -9,11 +10,10 @@
 #   as this file and mounted to the correct folders inside the container.
 # - Paperless listens on port 8000.
 #
-# SQLite is used as the database. The SQLite file is stored in the data volume.
-#
 # In addition to that, this Docker Compose file adds the following optional
 # configurations:
 #
+# - Instead of SQLite (default), MariaDB is used as the database server.
 # - Apache Tika and Gotenberg servers are started with paperless and paperless
 #   is configured to use these services. These provide support for consuming
 #   Office documents (Word, Excel, Power Point and their LibreOffice counter-
@@ -29,37 +29,99 @@
 #
 # For more extensive installation and update instructions, refer to the
 # documentation.
-
+#
 services:
+  nginx:
+    image: docker.io/nginx:latest
+    command: '/bin/sh -c ''while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g "daemon off;"'''
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/nginx:/etc/nginx/conf.d
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+  certbot:
+    image: certbot/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+
   broker:
     image: docker.io/library/redis:7
     restart: unless-stopped
     volumes:
       - redisdata:/data
 
-  webserver:
+  db:
+    image: docker.io/library/postgres:16
+    restart: unless-stopped
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: ${DB_ROOT_PASSWORD}
+
+  webserver-work:
     image: ghcr.io/paperless-ngx/paperless-ngx:latest
     restart: unless-stopped
     depends_on:
       - broker
       - gotenberg
       - tika
-    ports:
-      - "8000:8000"
     volumes:
-      - data:/usr/src/paperless/data
-      - media:/usr/src/paperless/media
-      - ./export:/usr/src/paperless/export
-      - ./consume:/usr/src/paperless/consume
+      - ./data/work/data:/usr/src/paperless/data
+      - ./data/work/media:/usr/src/paperless/media
+      - ./data/work/export:/usr/src/paperless/export
+      - ./data/work/consume:/usr/src/paperless/consume
       - ./scripts:/scripts
     env_file: docker-compose.env
     environment:
       PAPERLESS_REDIS: redis://broker:6379
+      PAPERLESS_DBENGINE: postgres
+      PAPERLESS_DBNAME: paperless_work
+      PAPERLESS_DBHOST: db
+      PAPERLESS_DBUSER: paperless_work
+      PAPERLESS_DBPASS: ${PAPERLESS_WORK_DB_PASSWORD}
+      PAPERLESS_DBPORT: 5432
       PAPERLESS_TIKA_ENABLED: 1
       PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://gotenberg:3000
       PAPERLESS_TIKA_ENDPOINT: http://tika:9998
       PAPERLESS_POST_CONSUME_SCRIPT: /scripts/post-consumption.sh
+      PAPERLESS_AUDIT_LOG_ENABLED: "true"
+      PAPERLESS_OCR_LANGUAGE: deu
+      PAPERLESS_FORCE_SCRIPT_NAME: /work
 
+  webserver-private:
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    restart: unless-stopped
+    depends_on:
+      - broker
+      - gotenberg
+      - tika
+    volumes:
+      - ./data/private/data:/usr/src/paperless/data
+      - ./data/private/media:/usr/src/paperless/media
+      - ./data/private/export:/usr/src/paperless/export
+      - ./data/private/consume:/usr/src/paperless/consume
+      - ./scripts:/scripts
+    env_file: docker-compose.env
+    environment:
+      PAPERLESS_REDIS: redis://broker:6379
+      PAPERLESS_DBENGINE: postgres
+      PAPERLESS_DBNAME: paperless_private
+      PAPERLESS_DBHOST: db
+      PAPERLESS_DBUSER: paperless_private
+      PAPERLESS_DBPASS: ${PAPERLESS_PRIVATE_DB_PASSWORD}
+      PAPERLESS_DBPORT: 5432
+      PAPERLESS_TIKA_ENABLED: 1
+      PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://gotenberg:3000
+      PAPERLESS_TIKA_ENDPOINT: http://tika:9998
+      PAPERLESS_POST_CONSUME_SCRIPT: /scripts/post-consumption.sh
+      PAPERLESS_AUDIT_LOG_ENABLED: "true"
+      PAPERLESS_OCR_LANGUAGE: deu
+      PAPERLESS_FORCE_SCRIPT_NAME: /private
   gotenberg:
     image: docker.io/gotenberg/gotenberg:8.7
     restart: unless-stopped
@@ -76,6 +138,4 @@ services:
     restart: unless-stopped
 
 volumes:
-  data:
-  media:
   redisdata:
