@@ -1,0 +1,4 @@
+Host backup-storage
+    Hostname <hostname>
+    User <user>
+    IdentityFile ~\.ssh\id_storage_backup
