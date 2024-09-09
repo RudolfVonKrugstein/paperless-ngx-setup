@@ -86,6 +86,7 @@ services:
     env_file: docker-compose.env
     environment:
       PAPERLESS_REDIS: redis://broker:6379
+      PAPERLESS_REDIS_PREFIX: work
       PAPERLESS_DBENGINE: postgres
       PAPERLESS_DBNAME: paperless_work
       PAPERLESS_DBHOST: db
@@ -117,6 +118,7 @@ services:
     env_file: docker-compose.env
     environment:
       PAPERLESS_REDIS: redis://broker:6379
+      PAPERLESS_REDIS_PREFIX: private
       PAPERLESS_DBENGINE: postgres
       PAPERLESS_DBNAME: paperless_private
       PAPERLESS_DBHOST: db
