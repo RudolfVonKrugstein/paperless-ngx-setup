@@ -1,4 +1,7 @@
 set -e
+echo "cd into scripts direcotry"
+cd "$(dirname "$0")"
+
 echo "########################## WORK #########################################"
 echo "running sanity checker for work"
 docker compose exec -T webserver-work document_sanity_checker
