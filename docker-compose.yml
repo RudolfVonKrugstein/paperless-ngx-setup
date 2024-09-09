@@ -98,6 +98,7 @@ services:
       PAPERLESS_POST_CONSUME_SCRIPT: /scripts/post-consumption.sh
       PAPERLESS_AUDIT_LOG_ENABLED: "true"
       PAPERLESS_OCR_LANGUAGE: deu
+      PAPERLESS_URL: https://dms.huesken.org/work
       PAPERLESS_FORCE_SCRIPT_NAME: /work
 
   webserver-private:
@@ -128,6 +129,7 @@ services:
       PAPERLESS_POST_CONSUME_SCRIPT: /scripts/post-consumption.sh
       PAPERLESS_AUDIT_LOG_ENABLED: "true"
       PAPERLESS_OCR_LANGUAGE: deu
+      PAPERLESS_URL: https://dms.huesken.org/private
       PAPERLESS_FORCE_SCRIPT_NAME: /private
   gotenberg:
     image: docker.io/gotenberg/gotenberg:8.7
