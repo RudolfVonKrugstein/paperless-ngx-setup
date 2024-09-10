@@ -1,17 +1,16 @@
 #!/bin/env bash
 
+set -e
+
 echo "Begin post consumption script"
 
-echo "Install pipx"
-python -m pip install --user -U pipx
-export PATH="$PATH:$HOME/.local/bin"
-pipx ensurepath
+echo "Creating signing request"
+openssl ts -query -data "$DOCUMENT_SOURCE_PATH" -no_nonce -sha512 -cert -out /usr/src/paperless/timestamps/${DOCUMENT_ID}.tsq
 
-echo "Install poetry"
-pipx install poetry
+echo "Signing"
+curl -H "Content-Type: application/timestamp-query" --data-binary "@/usr/src/paperless/timestamps/${DOCUMENT_ID}.tsq" https://freetsa.org/tsr >/usr/src/paperless/timestamps/${DOCUMENT_ID}.tsr
 
-cd "$(dirname "$0")/add-timestamp-signature"
-poetry install
-poetry run python add-timestamp-signature.py
+echo "Verify it"
+openssl ts -verify -in file.tsr -queryfile /usr/src/paperless/timestamps/${DOCUMENT_ID}.tsr -CAfile ./cacert.pem -untrusted ./tsa.crt
 
 echo "End post consumption script"
