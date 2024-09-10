@@ -2,7 +2,10 @@
 
 set -e
 
-for original in $(find /usr/src/paperless/media/documents/originals); do
+shopt -s globstar
+
+for original in /usr/src/paperless/media/documents/originals/**/*; do
+  echo "Examining $original"
   # get the hash
   export TS_FNAME=$(sha512sum ${original} | awk '{print $1}')
 
