@@ -82,6 +82,7 @@ services:
       - ./data/work/media:/usr/src/paperless/media
       - ./data/work/export:/usr/src/paperless/export
       - ./data/work/consume:/usr/src/paperless/consume
+      - ./data/work/timestamps:/usr/src/paperless/timestamps
       - ./scripts:/scripts
     env_file: docker-compose.env
     environment:
@@ -114,6 +115,7 @@ services:
       - ./data/private/media:/usr/src/paperless/media
       - ./data/private/export:/usr/src/paperless/export
       - ./data/private/consume:/usr/src/paperless/consume
+      - ./data/private/timestamps:/usr/src/paperless/timestamps
       - ./scripts:/scripts
     env_file: docker-compose.env
     environment:

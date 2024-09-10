@@ -13,7 +13,9 @@ docker compose exec -T webserver-work document_exporter -c ../export/backup
 
 echo "Move to tmp directory"
 rm -rf /tmp/backup_work
-mv data/work/export/backup /tmp/backup_work
+mv data/work/export/backup /tmp/backup_work/
+echo "adding the timestamps"
+cp data/work/timestamps /tmp/backup_work/ -r
 
 echo "Run rustic"
 restic --password-file ./.backup_password --repo sftp:backup-storage:/backups/dms_work backup /tmp/backup_work
@@ -39,7 +41,9 @@ docker compose exec -T webserver-private document_exporter -c ../export/backup
 
 echo "Move to tmp directory"
 rm -rf /tmp/backup_private
-mv data/private/export/backup /tmp/backup_private
+mv data/private/export/backup /tmp/backup_private/
+echo "adding the timestamps"
+cp data/private/timestamps /tmp/backup_private/ -r
 
 echo "Run rustic"
 restic --password-file ./.backup_password --repo sftp:backup-storage:/backups/dms_private backup /tmp/backup_private
