@@ -19,11 +19,16 @@ curl -H "Content-Type: application/timestamp-query" \
   https://freetsa.org/tsr \
   >/usr/src/paperless/timestamps/${DOCUMENT_ID}.tsr
 
+echo "Show timestamp information"
+openssl ts -reply \
+  -in /usr/src/paperless/timestamps/${DOCUMENT_ID}.tsr \
+  -text
+
 echo "Verify it"
 openssl ts \
   -verify \
   -in /usr/src/paperless/timestamps/${DOCUMENT_ID}.tsr \
-  -queryfile /usr/src/paperless/timestamps/${DOCUMENT_ID}.tsq \
+  -data "$DOCUMENT_SOURCE_PATH" \
   -CAfile /scripts/cacert.pem \
   -untrusted /scripts/tsa.crt
 
