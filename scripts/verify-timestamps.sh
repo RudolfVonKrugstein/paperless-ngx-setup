@@ -4,7 +4,7 @@ set -e
 
 shopt -s globstar
 
-for original in /usr/src/paperless/media/documents/originals/**/*; do
+for original in $(find /usr/src/paperless/media/documents/originals -type f); do
   echo "Examining $original"
   # get the hash
   export TS_FNAME=$(sha512sum ${original} | awk '{print $1}')
