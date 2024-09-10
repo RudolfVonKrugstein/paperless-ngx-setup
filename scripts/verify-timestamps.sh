@@ -9,7 +9,7 @@ for original in $(find /usr/src/paperless/media/documents/originals -type f); do
   # get the hash
   export TS_FNAME=$(sha512sum ${original} | awk '{print $1}')
 
-  echo "Testing $orignal with hash in $TS_NAME"
+  echo "Testing $original with hash in $TS_FNAME"
 
   openssl ts \
     -verify \
